@@ -1,1 +1,6 @@
+.serverless
+dist
 node_modules
+dist
+tags
+tags.*
