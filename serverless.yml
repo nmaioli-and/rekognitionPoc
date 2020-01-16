@@ -7,3 +7,48 @@ provider:
   defaultStage: ${env:MYDAIR_LOCAL_STAGE}
   stage: ${opt:stage, self:provider.defaultStage}
   region: ${opt:region, 'eu-west-1'}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+        - s3:DeleteObject
+      Resource:
+        Fn::Join:
+          - ''
+          - - 'arn:aws:s3:::'
+            - Ref: Avatars
+            - '/*'
+
+    - Effect: Allow
+      Action:
+        - s3:ListBucket
+      Resource:
+        Fn::Join:
+          - ''
+          - - 'arn:aws:s3:::'
+            - Ref: Avatars
+
+    - Effect: Allow
+      Action:
+        - rekognition:DetectFaces
+      Resource: '*'
+
+  environment:
+    REGION: ${self:provider.region}
+    AVATARS_BUCKET:
+      Ref: Avatars
+
+resources:
+  Resources:
+    Avatars:
+      Type: AWS::S3::Bucket
+
+functions:
+  uploadImage:
+    handler: dist/uploadImage.handler
+    events:
+      - http:
+          path: image/
+          method: post
